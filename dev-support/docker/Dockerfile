@@ -19,7 +19,7 @@
 # See BUILDING.txt.
 
 
-FROM ubuntu:trusty
+FROM ubuntu:trusty-20180929
 
 WORKDIR /root
 
@@ -77,11 +77,21 @@ RUN echo "quiet = on" >> "/root/.wgetrc"
 
 RUN apt-get -q install --no-install-recommends -y software-properties-common
 RUN add-apt-repository -y ppa:webupd8team/java
+RUN cd /tmp
+RUN apt-get -q install wget
+RUN wget http://monalisa.cern.ch/MONALISA/download/java/jdk-7u80-linux-x64.tar.gz
+#COPY jdk-7u80-linux-x64.tar.gz .
+RUN tar xvfz jdk-7u80-linux-x64.tar.gz
+RUN mkdir -p /usr/lib/jvm/
+RUN mv jdk1.7.0_80 /usr/lib/jvm/java-7-oracle
+RUN update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/java-7-oracle/jre/bin/java" 1
+RUN update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/java-7-oracle/bin/javac" 1
 RUN apt-get -q update
 
 # Auto-accept the Oracle JDK license
-RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
-RUN apt-get -q install --no-install-recommends -y oracle-java7-installer
+#RUN echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
+#RUN apt-get -q install --no-install-recommends -y oracle-java7-installer
+
 
 # Auto-accept the Oracle JDK license
 RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections
@@ -118,6 +128,7 @@ RUN apt-get -q install --no-install-recommends -y bats
 ####
 # Install pylint
 ####
+RUN python -m pip install --upgrade pip setuptools wheel
 RUN pip install pylint
 
 ####
@@ -148,4 +159,3 @@ RUN mkdir -p /usr/local/apache-forrest ; \
 ADD hadoop_env_checks.sh /root/hadoop_env_checks.sh
 RUN chmod 755 /root/hadoop_env_checks.sh
 RUN echo '~/hadoop_env_checks.sh' >> /root/.bashrc
-
